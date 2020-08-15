@@ -5,25 +5,55 @@ import axios from 'axios';
 // two params which are two unique things between two components - Joke & Stories
 // url is unique & useState's initialValue
 export const useFetch = (url, initialValue) => {
+  // don't have response & error to start with - null
+  const [response, setResponse] = useState(initialValue);
+  const [error, setError] = useState(null);
 
- const [result, setResult] = useState(initialValue);
+  // We want to display a loader in the main component when fetching is occurring.
+  // As we did with error handling, let’s add a loading state.
+  const [loading, setLoading] = useState(false);
 
- useEffect(() => {
-  const query = async () => {
-   const { data } = await axios.get(url);
-   setResult(data);
-  };
-  query();
-  // eslint-disable-next-line
- }, []);
+  // What if the request is slow and the component has already unmounted by
+  // the time the async request finished? You will get the error:
+  // To prevent this memory leak from happening, one solution is to use the useEffect’s
+  // Cleanup function in combination with the AbortController built-in object:
 
- // returning main result at the end of this function,
- // this func will take url argument & initialValue arg & return fetched data
- return result;
+  // The AbortController interface represents a controller object that
+  // allows you to abort/end one or more Web requests as and when desired.
+  useEffect(() => {
+    const abortController = new AbortController();
+    const signal = abortController.signal;
 
-}
+    const doFetch = async () => {
+      setLoading(true);
+      try {
+        const { data } = await axios.get(url, initialValue);
+        if (!signal.aborted) {
+          setResponse(data);
+        }
+      } catch (e) {
+        if (!signal.aborted) {
+          setError(e);
+        }
+      } finally {
+        if (!signal.aborted) {
+          setLoading(false);
+        }
+      }
+      // A lot of people ignores it, but Try… Catch takes a final statement called finally.
+      // finally is executed, no mater if there’s an error or not
+    };
+    doFetch();
 
-// Hooks are great for avoiding code duplication across your app. 
+    // clean up function
+    return () => {
+      abortController.abort();
+    }; // eslint-disable-next-line
+  }, []);
+  return { response, error, loading };
+};
+
+// Hooks are great for avoiding code duplication across your app.
 // Something we do a lot is to fetch data.
 
 // It can fetch data
