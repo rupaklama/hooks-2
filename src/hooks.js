@@ -59,3 +59,19 @@ export const useFetch = (url, initialValue) => {
 // It can fetch data
 // It returns a loading state
 // It returns an error state
+
+// In a real-life project, we might want to do extra stuff when we fetch data.
+// Our Hook could be improved by implementing the following features:
+
+// Caching: Before fetching, it’d check in a cache of your choice if data has already been fetched
+// and if it needs to be (re)fetched
+
+// Logging error: If there’s an error, it’d dispatch it to a service/third-party application,
+// so developers can be aware of them
+
+// React Suspense: The <Suspense> component lets you wait for some code to load and declaratively
+// specify a loading state (like a spinner) while you’re waiting.
+// It’s great but not recommended yet as it’s an experimental feature so far. See more here.
+
+// Effects: It could dispatch an action to a store, like Redux,
+// when it completes or receives an error (an action you’d provide via an onComplete or an onError argument)
